@@ -646,14 +646,14 @@ partitions<span class="token operator">:</span> &lt;
 <li>VStream</li>
 </ol>
 <p>VStream是可通过VTGate访问的变更通知服务，VStream的目的是从Vitess集群的基础MySQL分片提供与MySQL二进制日志等效的信息；单个VStream还可以合并逻辑库中多个分片中的变更事件，从而使其成为在Vites数据存储下游提供CDC（Change Data Capture）过程的便捷工具。</p>
-<p><img src="/medias/images/vstream.png" alt="img"></p>
+<p><img src="/medias/images/vstream.png" alt="vstream"></p>
 <ol start="9">
 <li>VTGate</li>
 </ol>
 <p>  网关高可用拓扑图如下，正常情况下，各机房的应用优先使用各自机房的网关服务，网关服务可以自动把读写请求路由到跨机房的主库上进行操作； 只读请求会落到本cell的从库上，不会跨cell提供读取服务</p>
 <p>同时ORC服务需要是跨多机房高可用，这样如果单个机房故障后ORC可以在其他可用机房提升可用的从库为主库，继续提供服务。这个过程中未故障的机房的应用不用做任何操作； 具备多机房高可用就需要增加集群的副本数</p>
 <p>副本数需要变成一主3从， master+replica(同机房)+replica(跨机房)+rdonly(同机房跨机房均可)</p>
-<p><img src="/medias/images/gate.png" alt="img"></p>
+<p><img src="/medias/images/gate.png" alt="网关拓扑"></p>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
