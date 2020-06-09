@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>京东技术极客</title>
+  
+  <subtitle>做干净的技术极客</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://perfect-geek.github.io/"/>
+  <updated>2020-06-09T07:57:30.418Z</updated>
+  <id>https://perfect-geek.github.io/</id>
+  
+  <author>
+    <name>perfect-geek</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>vitess基本概念介绍</title>
+    <link href="https://perfect-geek.github.io/2020/06/09/vitess-concepts/"/>
+    <id>https://perfect-geek.github.io/2020/06/09/vitess-concepts/</id>
+    <published>2020-06-09T07:22:03.000Z</published>
+    <updated>2020-06-09T07:57:30.418Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;&lt;strong&gt;1. Cell&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Cell是一组服务器或者一片基础设置区域，用来做故障隔离的最小单位；　Cell可以是一个完整的数据中心也可以是数据中心的一个区域(子集)，或者一个逻辑拆分区域；　通常称作为Zone或者Area
+        
+      
+    
+    </summary>
+    
+    
+      <category term="vitess专题" scheme="https://perfect-geek.github.io/categories/vitess%E4%B8%93%E9%A2%98/"/>
+    
+    
+      <category term="vitess,vitess概念" scheme="https://perfect-geek.github.io/tags/vitess-vitess%E6%A6%82%E5%BF%B5/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>post title with whitespace</title>
+    <link href="https://perfect-geek.github.io/2020/05/22/post-title-with-whitespace/"/>
+    <id>https://perfect-geek.github.io/2020/05/22/post-title-with-whitespace/</id>
+    <published>2020-05-22T08:39:53.000Z</published>
+    <updated>2020-05-22T08:40:10.495Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;dafdsaojifjsdiofjdasofjsaofjsdiofjsiofsji&lt;/p&gt;
+&lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+   
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://perfect-geek.github.io/2020/05/22/hello-world/"/>
+    <id>https://perfect-geek.github.io/2020/05/22/hello-world/</id>
+    <published>2020-05-22T07:11:37.203Z</published>
+    <updated>2020-05-22T07:11:37.203Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post8</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post8/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post8/</id>
+    <published>2020-05-20T12:18:00.000Z</published>
+    <updated>2020-05-22T07:11:37.211Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post7</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post7/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post7/</id>
+    <published>2020-05-20T12:17:56.000Z</published>
+    <updated>2020-05-22T07:11:37.211Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post6</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post6/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post6/</id>
+    <published>2020-05-20T12:17:53.000Z</published>
+    <updated>2020-05-22T07:11:37.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post5</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post5/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post5/</id>
+    <published>2020-05-20T12:17:46.000Z</published>
+    <updated>2020-05-22T07:11:37.205Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post4</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post4/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post4/</id>
+    <published>2020-05-20T12:17:43.000Z</published>
+    <updated>2020-05-22T07:11:37.205Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post3</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post3/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post3/</id>
+    <published>2020-05-20T12:17:39.000Z</published>
+    <updated>2020-05-22T07:11:37.209Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post2</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post2/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post2/</id>
+    <published>2020-05-20T12:17:36.000Z</published>
+    <updated>2020-05-22T07:11:37.208Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>post1</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/post1/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/post1/</id>
+    <published>2020-05-20T12:17:32.000Z</published>
+    <updated>2020-05-22T07:11:37.206Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+      <category term="分类1" scheme="https://perfect-geek.github.io/categories/%E5%88%86%E7%B1%BB1/"/>
+    
+    
+      <category term="标签1" scheme="https://perfect-geek.github.io/tags/%E6%A0%87%E7%AD%BE1/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>article title</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/article-title/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/article-title/</id>
+    <published>2020-05-20T08:22:54.000Z</published>
+    <updated>2020-05-22T07:11:37.207Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if (!el.dataset.src) { return; }
+       
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>hello blog</title>
+    <link href="https://perfect-geek.github.io/2020/05/20/hello-blog/"/>
+    <id>https://perfect-geek.github.io/2020/05/20/hello-blog/</id>
+    <published>2020-05-20T07:55:56.000Z</published>
+    <updated>2020-05-22T07:11:37.204Z</updated>
+    
+    <summary type="html">
+    
+      
+      
+        
+        
+          &lt;p&gt;this is my first blog article&lt;/p&gt;
+&lt;script&gt;
+        document.querySelectorAll(&#39;.github-emoji&#39;)
+          .forEach(el =&gt; {
+            if
+        
+      
+    
+    </summary>
+    
+    
+    
+  </entry>
+  
+</feed>

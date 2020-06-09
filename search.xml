@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>vitess基本概念介绍</title>
+      <link href="/2020/06/09/vitess-concepts/"/>
+      <url>/2020/06/09/vitess-concepts/</url>
+      
+        <content type="html"><![CDATA[<p><strong>1. Cell</strong></p><p>Cell是一组服务器或者一片基础设置区域，用来做故障隔离的最小单位；　Cell可以是一个完整的数据中心也可以是数据中心的一个区域(子集)，或者一个逻辑拆分区域；　通常称作为Zone或者Area Zone。Vitess可以优雅的处理单个Cell故障的情况，比如网络故障或者机房掉电</p><p><img src="/medias/images/cell.png" alt="Cell拓扑结构"></p><p>单个机房故障的问题在3.0测试失败，无法自动切换过去，手动处理可以切换过去，6.0待测试</p><p><strong>2. Execution Plans</strong></p><p>  vtgate和vttablet上都会做sql解析目的是获取最佳的执行方式，这个计算过程称作查询计划；　计算完成生成的结果是查询执行计划；</p><p>执行计划依赖于查询语句和VSchema路由信息，Vitess执行计划策略一个基本目标是尽可能减少底层MySQL实例的工作负载，对于跨分片的查询，vitess对多个源库的数据进行聚合然后返回正确的查询结果</p><p>执行计划的查看</p><p>页面查看　<a href="http://127.0.0.1:15001/debug/queryz" target="_blank" rel="noopener">http://127.0.0.1:15001/debug/queryz</a></p><p><img src="/medias/images/queryz.png" alt="查询统计"></p><p>命令查看</p><pre class=" language-bash"><code class="language-bash">mysql<span class="token operator">></span> EXPLAIN FORMAT<span class="token operator">=</span>vitess <span class="token keyword">select</span> * from corder<span class="token punctuation">;</span>+----------+-----------------+----------+-------------+------------+----------------------+<span class="token operator">|</span> operator <span class="token operator">|</span> variant <span class="token operator">|</span> keyspace <span class="token operator">|</span> destination <span class="token operator">|</span> tabletType <span class="token operator">|</span> query <span class="token operator">|</span>+----------+-----------------+----------+-------------+------------+----------------------+<span class="token operator">|</span> Route <span class="token operator">|</span> SelectUnsharded <span class="token operator">|</span> commerce <span class="token operator">|</span> <span class="token operator">|</span> UNKNOWN <span class="token operator">|</span> <span class="token keyword">select</span> * from corder <span class="token operator">|</span>+----------+-----------------+----------+-------------+------------+----------------------+ mysql<span class="token operator">></span> EXPLAIN FORMAT<span class="token operator">=</span>vitess <span class="token keyword">select</span> * from customer<span class="token punctuation">;</span>+----------+---------------+----------+-------------+------------+------------------------+<span class="token operator">|</span> operator <span class="token operator">|</span> variant <span class="token operator">|</span> keyspace <span class="token operator">|</span> destination <span class="token operator">|</span> tabletType <span class="token operator">|</span> query <span class="token operator">|</span>+----------+---------------+----------+-------------+------------+------------------------+<span class="token operator">|</span> Route <span class="token operator">|</span> SelectScatter <span class="token operator">|</span> customer <span class="token operator">|</span> <span class="token operator">|</span> UNKNOWN <span class="token operator">|</span> <span class="token keyword">select</span> * from customer <span class="token operator">|</span>+----------+---------------+----------+-------------+------------+------------------------+mysql<span class="token operator">></span> EXPLAIN FORMAT<span class="token operator">=</span>vitess <span class="token keyword">select</span> * from customer where customer_id<span class="token operator">=</span>1<span class="token punctuation">;</span>+----------+-------------------+----------+-------------+---------------------------------------+<span class="token operator">|</span> operator <span class="token operator">|</span> variant <span class="token operator">|</span> keyspace <span class="token operator">|</span> destination <span class="token operator">|</span> tabletType <span class="token operator">|</span> query <span class="token operator">|</span>+----------+-------------------+----------+-------------+------------+--------------------------+<span class="token operator">|</span> Route <span class="token operator">|</span> SelectEqualUnique <span class="token operator">|</span> customer <span class="token operator">|</span> <span class="token operator">|</span> UNKNOWN <span class="token operator">|</span> <span class="token keyword">select</span> * from customer where customer_id <span class="token operator">=</span> 1<span class="token operator">|</span> +----------+-------------------+----------+-------------+------------+------------------------+mysql<span class="token operator">></span> EXPLAIN FORMAT<span class="token operator">=</span>vitess <span class="token keyword">select</span> now<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>+----------+-----------------+----------+-------------+------------+------------------------+<span class="token operator">|</span> operator <span class="token operator">|</span> variant <span class="token operator">|</span> keyspace <span class="token operator">|</span> destination <span class="token operator">|</span> tabletType <span class="token operator">|</span> query <span class="token operator">|</span>+----------+-----------------+----------+-------------+------------+------------------------+<span class="token operator">|</span> Route <span class="token operator">|</span> SelectReference <span class="token operator">|</span> commerce <span class="token operator">|</span> <span class="token operator">|</span> UNKNOWN <span class="token operator">|</span> <span class="token keyword">select</span> now<span class="token punctuation">(</span><span class="token punctuation">)</span> from dual <span class="token operator">|</span>+----------+-----------------+----------+-------------+------------+------------------------+</code></pre><ol start="3"><li>Keyspace</li></ol><p>Keyspace是逻辑库信息，在非拆分状态下，一个逻辑库对应后端一个mysql物理库；在拆分状态下，一个逻辑库对应多个mysql物理库；从应用程序的角度来看，不管一个keyspace是单分片（1个Mysql集群）还是多分片(多个Mysql集群)，在keyspace上的所有操作，和操作普通MYSQL库没有任何区别，应用感知不到分片的概念。</p><p>单分片:</p><p><img src="/medias/images/ks_unsharded.png" alt="单分片"></p><p>多分片:</p><p><img src="/medias/images/ks_shard.png" alt="多分片"></p><ol start="4"><li>Keyspace Graph</li></ol><p>Vitess 使用<em>keyspace graph</em> 记录Cell下有多少keyspaces，每个keyspace下有多少shard，每个shard下有多少个tablet，每个tablet的类型是什么。</p><p>Partitions</p><p>在<strong>水平拆分</strong>（将表数据通过路由重新打散到各个新分片的）过程中，会出现具有重叠范围的分片。例如，拆分的源分片范围“0”，而其目标分片的范围是“-80”和“80-”; </p><p>由于这些分片在迁移期间需要同时存在，因此keyspace graph维护一套分片的列表（也称分区)，其范围涵盖所有可能的keyspace ID值，同时不重叠且连续。分片可以移入和移出此列表确定它们是否有效。</p><pre class=" language-json"><code class="language-json">partitions<span class="token operator">:</span> &lt;  served_type<span class="token operator">:</span> MASTER  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"-80"</span>    key_range<span class="token operator">:</span> &lt;      end<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"80-"</span>    key_range<span class="token operator">:</span> &lt;      start<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >>partitions<span class="token operator">:</span> &lt;  served_type<span class="token operator">:</span> REPLICA  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"-80"</span>    key_range<span class="token operator">:</span> &lt;      end<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"80-"</span>    key_range<span class="token operator">:</span> &lt;      start<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >>partitions<span class="token operator">:</span> &lt;  served_type<span class="token operator">:</span> RDONLY  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"-80"</span>    key_range<span class="token operator">:</span> &lt;      end<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >  shard_references<span class="token operator">:</span> &lt;    name<span class="token operator">:</span> <span class="token string">"80-"</span>    key_range<span class="token operator">:</span> &lt;      start<span class="token operator">:</span> <span class="token string">"\200"</span>    >  >></code></pre><p>Served From</p><p>在<strong>垂直拆分</strong>期间（将源keyspace中的某个表移到新的keyspace中），多个keyspace会同时共存同样的表。</p><p>对于每个 <code>(cell, tablet type)</code> 元组会有不同的<code>ServedFrom</code>追踪. 这允许迁移分阶段进行：首先迁移<em>rdonly</em>和<em>replica</em>请求，一次一个单元，最后迁移<em>master</em>请求</p><p><strong>5. MoveTables</strong></p><p>MoveTables是基于VReplication的新工作流，他可以支持无需停机的情况在在多个逻辑库上迁移表数据</p><p><img src="/medias/images/move_tables.png" alt="MoveTables"></p><p><strong>7. VSchema</strong></p><p>用于描述如何在keyspace和分片中存储数据。Vschma用于带路由键的SQL查询，也用于拆分分片操作。</p><p>拆分路由:</p><pre class=" language-json"><code class="language-json"><span class="token punctuation">{</span>  <span class="token property">"sharded"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>  <span class="token property">"vindexes"</span><span class="token operator">:</span> <span class="token punctuation">{</span>    <span class="token property">"hash"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"hash"</span>    <span class="token punctuation">}</span>  <span class="token punctuation">}</span><span class="token punctuation">,</span>  <span class="token property">"tables"</span><span class="token operator">:</span> <span class="token punctuation">{</span>    <span class="token property">"customer"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"column_vindexes"</span><span class="token operator">:</span> <span class="token punctuation">[</span>        <span class="token punctuation">{</span>          <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"customer_id"</span><span class="token punctuation">,</span>          <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"hash"</span>        <span class="token punctuation">}</span>      <span class="token punctuation">]</span><span class="token punctuation">,</span>      <span class="token property">"auto_increment"</span><span class="token operator">:</span> <span class="token punctuation">{</span>        <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"customer_id"</span><span class="token punctuation">,</span>        <span class="token property">"sequence"</span><span class="token operator">:</span> <span class="token string">"customer_seq"</span>      <span class="token punctuation">}</span>    <span class="token punctuation">}</span><span class="token punctuation">,</span>    <span class="token property">"corder"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"column_vindexes"</span><span class="token operator">:</span> <span class="token punctuation">[</span>        <span class="token punctuation">{</span>          <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"customer_id"</span><span class="token punctuation">,</span>          <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"hash"</span>        <span class="token punctuation">}</span>      <span class="token punctuation">]</span><span class="token punctuation">,</span>      <span class="token property">"auto_increment"</span><span class="token operator">:</span> <span class="token punctuation">{</span>        <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"order_id"</span><span class="token punctuation">,</span>        <span class="token property">"sequence"</span><span class="token operator">:</span> <span class="token string">"order_seq"</span>      <span class="token punctuation">}</span>    <span class="token punctuation">}</span>  <span class="token punctuation">}</span><span class="token punctuation">}</span></code></pre><p>非拆分表设置:</p><pre class=" language-json"><code class="language-json"><span class="token punctuation">{</span>  <span class="token property">"sharded"</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>  <span class="token property">"vindexes"</span><span class="token operator">:</span> <span class="token punctuation">{</span>    <span class="token property">"hash"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"type"</span><span class="token operator">:</span> <span class="token string">"hash"</span>    <span class="token punctuation">}</span>  <span class="token punctuation">}</span><span class="token punctuation">,</span>  <span class="token property">"tables"</span><span class="token operator">:</span> <span class="token punctuation">{</span>    <span class="token property">"customer"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"column_vindexes"</span><span class="token operator">:</span> <span class="token punctuation">[</span>        <span class="token punctuation">{</span>          <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"customer_id"</span><span class="token punctuation">,</span>          <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"hash"</span>        <span class="token punctuation">}</span>      <span class="token punctuation">]</span><span class="token punctuation">,</span>      <span class="token property">"auto_increment"</span><span class="token operator">:</span> <span class="token punctuation">{</span>        <span class="token property">"column"</span><span class="token operator">:</span> <span class="token string">"customer_id"</span><span class="token punctuation">,</span>        <span class="token property">"sequence"</span><span class="token operator">:</span> <span class="token string">"customer_seq"</span>      <span class="token punctuation">}</span>    <span class="token punctuation">}</span><span class="token punctuation">,</span>    <span class="token property">"unshard_table"</span><span class="token operator">:</span> <span class="token punctuation">{</span>      <span class="token property">"pinned"</span><span class="token operator">:</span> <span class="token string">"00"</span>    <span class="token punctuation">}</span>  <span class="token punctuation">}</span><span class="token punctuation">}</span></code></pre><ol start="8"><li>VStream</li></ol><p>VStream是可通过VTGate访问的变更通知服务，VStream的目的是从Vitess集群的基础MySQL分片提供与MySQL二进制日志等效的信息；单个VStream还可以合并逻辑库中多个分片中的变更事件，从而使其成为在Vites数据存储下游提供CDC（Change Data Capture）过程的便捷工具。</p><p><img src="/medias/images/vstream.png" alt="img"></p><ol start="9"><li>VTGate</li></ol><p>  网关高可用拓扑图如下，正常情况下，各机房的应用优先使用各自机房的网关服务，网关服务可以自动把读写请求路由到跨机房的主库上进行操作； 只读请求会落到本cell的从库上，不会跨cell提供读取服务</p><p>同时ORC服务需要是跨多机房高可用，这样如果单个机房故障后ORC可以在其他可用机房提升可用的从库为主库，继续提供服务。这个过程中未故障的机房的应用不用做任何操作； 具备多机房高可用就需要增加集群的副本数</p><p>副本数需要变成一主3从， master+replica(同机房)+replica(跨机房)+rdonly(同机房跨机房均可)</p><p><img src="/medias/images/gate.png" alt="img"></p><script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      <categories>
+          
+          <category> vitess专题 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> vitess,vitess概念 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post title with whitespace</title>
+      <link href="/2020/05/22/post-title-with-whitespace/"/>
+      <url>/2020/05/22/post-title-with-whitespace/</url>
+      
+        <content type="html"><![CDATA[<p>dafdsaojifjsdiofjdasofjsaofjsdiofjsiofsji</p><script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2020/05/22/hello-world/"/>
+      <url>/2020/05/22/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></tbody></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></tbody></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></tbody></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></tbody></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p><script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post8</title>
+      <link href="/2020/05/20/post8/"/>
+      <url>/2020/05/20/post8/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post7</title>
+      <link href="/2020/05/20/post7/"/>
+      <url>/2020/05/20/post7/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post6</title>
+      <link href="/2020/05/20/post6/"/>
+      <url>/2020/05/20/post6/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post5</title>
+      <link href="/2020/05/20/post5/"/>
+      <url>/2020/05/20/post5/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post4</title>
+      <link href="/2020/05/20/post4/"/>
+      <url>/2020/05/20/post4/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post3</title>
+      <link href="/2020/05/20/post3/"/>
+      <url>/2020/05/20/post3/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post2</title>
+      <link href="/2020/05/20/post2/"/>
+      <url>/2020/05/20/post2/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>post1</title>
+      <link href="/2020/05/20/post1/"/>
+      <url>/2020/05/20/post1/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      <categories>
+          
+          <category> 分类1 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 标签1 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>article title</title>
+      <link href="/2020/05/20/article-title/"/>
+      <url>/2020/05/20/article-title/</url>
+      
+        <content type="html"><![CDATA[<script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>hello blog</title>
+      <link href="/2020/05/20/hello-blog/"/>
+      <url>/2020/05/20/hello-blog/</url>
+      
+        <content type="html"><![CDATA[<p>this is my first blog article</p><script>        document.querySelectorAll('.github-emoji')          .forEach(el => {            if (!el.dataset.src) { return; }            const img = document.createElement('img');            img.style = 'display:none !important;';            img.src = el.dataset.src;            img.addEventListener('error', () => {              img.remove();              el.style.color = 'inherit';              el.style.backgroundImage = 'none';              el.style.background = 'none';            });            img.addEventListener('load', () => {              img.remove();            });            document.body.appendChild(img);          });      </script>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+  
+  
+</search>
